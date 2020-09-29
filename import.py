@@ -35,6 +35,7 @@ def create_place(row, ptype):
     else:
         return ptype(row[ptype.name_header], lon, lat)
 
+
 def create_netwok(df):
     network = Network()
     for id in df[ID].unique():
@@ -52,13 +53,13 @@ def create_netwok(df):
             new_tour = Tour(id=id,
                             inlet=inlet,
                             outlet=outlet,
+                            date = general_info[DATE],
                             driver=general_info[DRIVER],
                             material=general_info[MATERIAL],
                             licence_plate=general_info[DRIPLATE])
         else:
             continue
         for _,row in rows.iterrows():
-            client = None
             client = create_place(row, Client)
             if client:
                 network.addClient(client)
@@ -72,7 +73,6 @@ def main(path):
     network = create_netwok(df)
     print(network)
 
-# todo : faire une class Network regroupant les inlet, outlet et clients pour savoir si deja enregistré
 
 if __name__ == '__main__':
     if len(sys.argv) <= 1:

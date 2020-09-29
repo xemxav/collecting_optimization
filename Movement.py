@@ -54,8 +54,7 @@ class High_up(Place):
 
 class Tour:
 
-    def __init__(self, id, inlet, outlet, driver="", material="", licence_plate="", clients=None,
-                 date=""):  # todo : changer date defaut + verifier que isinstance pour inlet / outlet
+    def __init__(self, id, inlet, outlet, date, driver="", material="", licence_plate="", clients=None):  # todo : changer date defaut + verifier que isinstance pour inlet / outlet
         self.id = id
         self.inlet = inlet
         self.outlet = outlet
@@ -85,6 +84,7 @@ class Tour:
     def __str__(self):
         #todo : ajoutet check sur presence données
         str = f"ID = {self.id}\n" \
+              f"Date = {self.date.strftime('%d/%m/%Y')}\n" \
               f"Inlet = {self.inlet.name}\n" \
               f"Outlet = {self.outlet.name}\n" \
               f"Nombre de clients = {len(self.clients)}\n"
