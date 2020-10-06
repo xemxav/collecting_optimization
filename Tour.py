@@ -1,10 +1,14 @@
 import folium
 import statistics as stat
+from Places import Inlet, Outlet
+import openrouteservice
 
 class Tour:
 
     def __init__(self, tour_id, inlet, outlet, date, driver="", material="", licence_plate="",
-                 clients=None):  # todo : changer date defaut + verifier que isinstance pour inlet / outlet
+                 clients=None):
+        if not isinstance(inlet, Inlet) or not isinstance(outlet, Outlet):
+            raise ValueError
         self.tour_id = tour_id
         self.inlet = inlet
         self.outlet = outlet
@@ -63,21 +67,24 @@ class Tour:
     def calculateMatrix(self, client, dry_rune=False):
         coords = self.getAllCoord()
         destinations = [i + 1 for i, v in enumerate(coords[1:])]
-        matrix = client.distance_matrix(
-            locations=coords,
-            sources=[0, ],
-            destinations=destinations,
-            profile='driving-hgv',
-            metrics=['distance', 'duration'],
-            validate=True,
-            optimized=True,
-            dry_run=dry_rune,
-        )
+        try :
+            matrix = client.distance_matrix(
+                locations=coords,
+                sources=[0, ],
+                destinations=destinations,
+                profile='driving-hgv',
+                metrics=['distance', 'duration'],
+                validate=True,
+                optimized=True,
+                dry_run=dry_rune,
+            )
+        except openrouteservice.exceptions.ApiError as e:
+            print(e.args)
         self.matrix = matrix
         self.CalculateStat()
         self.SortClients()
         self.DefineHighUps()
-        return self.matrix
+        return True
 
     def checkmatrix(self):
         if self.matrix is None:
@@ -131,56 +138,70 @@ class Tour:
         coords = [c['client'].getCoordinateslola() for c in self.sorted_clients]
         coords.append(self.high_up2["outlet"].getCoordinateslola())
         opti = True if len(coords) > 4 else False
-        self.routes = client.directions(coords,
-                                        profile='driving-hgv',
-                                        format='geojson',
-                                        optimize_waypoints=opti,
-                                        dry_run=dry_run)
-
-        self.firsttrack = client.directions([self.inlet.getCoordinateslola(),
-                                             self.high_up1['client'].getCoordinateslola()],
+        try:
+            self.routes = client.directions(coords,
                                             profile='driving-hgv',
                                             format='geojson',
-                                            dry_run=dry_run,
-                                            validate=False)
+                                            optimize_waypoints=opti,
+                                            dry_run=dry_run)
+        except openrouteservice.exceptions.ApiError as e:
+            print(e.args)
+            return False
 
-        self.lasttrack = client.directions([self.high_up2['outlet'].getCoordinateslola(),
-                                            self.inlet.getCoordinateslola()],
-                                           profile='driving-hgv',
-                                           format='geojson',
-                                           dry_run=dry_run,
-                                           validate=False)
+        try:
+            self.firsttrack = client.directions([self.inlet.getCoordinateslola(),
+                                                 self.high_up1['client'].getCoordinateslola()],
+                                                profile='driving-hgv',
+                                                format='geojson',
+                                                dry_run=dry_run,
+                                                validate=False)
+        except openrouteservice.exceptions.ApiError as e:
+            print(e.args)
+            return False
 
-        self.totaldistance = self.routes['features'][0]['properties']['summary']['distance']\
-                             + self.firsttrack['features'][0]['properties']['summary']['distance']\
+        try:
+            self.lasttrack = client.directions([self.high_up2['outlet'].getCoordinateslola(),
+                                                self.inlet.getCoordinateslola()],
+                                               profile='driving-hgv',
+                                               format='geojson',
+                                               dry_run=dry_run,
+                                               validate=False)
+
+        except openrouteservice.exceptions.ApiError as e:
+            print(e.args)
+            return False
+
+        self.totaldistance = self.routes['features'][0]['properties']['summary']['distance'] \
+                             + self.firsttrack['features'][0]['properties']['summary']['distance'] \
                              + self.lasttrack['features'][0]['properties']['summary']['distance']
-        self.totalduration = self.routes['features'][0]['properties']['summary']['duration']\
-                             + self.firsttrack['features'][0]['properties']['summary']['duration']\
+        self.totalduration = self.routes['features'][0]['properties']['summary']['duration'] \
+                             + self.firsttrack['features'][0]['properties']['summary']['duration'] \
                              + self.lasttrack['features'][0]['properties']['summary']['duration']
+        return True
 
-
-
-    def createMap(self):
-        m = folium.Map(location=self.inlet.getCoordinateslalo(), zoom_start=15)
+    def createMap(self, map=None):
+        if map is None:
+            map = folium.Map(location=self.inlet.getCoordinateslalo(), zoom_start=15)
 
         folium.Marker(location=self.inlet.getCoordinateslalo(),
-                      popup=self.inlet.name).add_to(m)
+                      popup=self.inlet.name).add_to(map)
         folium.Marker(location=self.outlet.getCoordinateslalo(),
-                      popup=self.inlet.name).add_to(m)
+                      popup=self.inlet.name).add_to(map)
 
         folium.PolyLine(locations=[list(reversed(coord))
                                    for coord in
-                                   self.routes['features'][0]['geometry']['coordinates']]).add_to(m)
+                                   self.routes['features'][0]['geometry']['coordinates']]).add_to(map)
 
         folium.PolyLine(locations=[list(reversed(coord))
                                    for coord in
-                                   self.firsttrack['features'][0]['geometry']['coordinates']]).add_to(m)
+                                   self.firsttrack['features'][0]['geometry']['coordinates']]).add_to(map)
 
         folium.PolyLine(locations=[list(reversed(coord))
                                    for coord in
-                                   self.lasttrack['features'][0]['geometry']['coordinates']]).add_to(m)
+                                   self.lasttrack['features'][0]['geometry']['coordinates']]).add_to(map)
 
         for c in self.clients:
             folium.Marker(location=c.getCoordinateslalo(),
-                          popup=c.name).add_to(m)
-        m.save(f'map_tour{self.tour_id}.html')
+                          popup=c.name).add_to(map)
+        map.save(f'map_tour{self.tour_id}.html')
+        return map

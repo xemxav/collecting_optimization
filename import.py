@@ -79,13 +79,8 @@ def main(path):
     network = create_netwok(df)
     network.summaryInFile(f"{path}_net_summary")
     client = openrouteservice.Client(key=APIKEY)
-    first_tour = network.tours[0]
-    # print("inlet:", first_tour.inlet.getCoordinateslola())
-    # print("outlet: ", first_tour.outlet.getCoordinateslola())
-    first_tour.calculateMatrix(client)
-    print(first_tour)
-    first_tour.calc_optimization(client, dry_run=False)
-    first_tour.createMap()
+    print(network.calc_network(client))
+
 
 if __name__ == '__main__':
     if len(sys.argv) <= 1:

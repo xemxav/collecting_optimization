@@ -1,4 +1,6 @@
 from Places import Inlet, Outlet, Client
+import pandas as pd
+from reference import ID, OUTLET, INLET, MATERIAL
 
 
 class Network:
@@ -55,6 +57,22 @@ class Network:
         elif inlet is not None and inlet in self.inlets:
             return True
         return False
+
+    def calc_network(self, client):
+        data = []
+        for tour in self.tours:
+            print(f"Begin Calculation for ID {tour.tour_id}")
+            if tour.calculateMatrix(client) and tour.calc_optimization(client):
+                data.append([tour.tour_id,
+                             tour.inlet.name,
+                             tour.outlet.name,
+                             tour.material,
+                             len(tour.clients),
+                             tour.totaldistance,
+                             tour.totalduration
+                             ])
+        df = pd.DataFrame(data, columns=[ID,INLET,OUTLET,MATERIAL, "NB_CLIENTS", "DISTANCE_TOTALE", "DUREE_TOTALE"])
+        return df
 
     def outletInNetwork(self, outlet=None, outlet_name=""):
         if outlet is None and outlet_name != "":
