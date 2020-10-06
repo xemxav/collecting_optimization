@@ -14,3 +14,5 @@ MATERIAL = "Transport_type"
 OUTLET = "Outlet"
 OLO = "Outlet_Longitude"
 OLA = "Outlet_latitude"
+
+APIKEY = "5b3ce3597851110001cf6248435db7a68fe148e1888617695f66133c"

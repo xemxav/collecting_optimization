@@ -1,5 +1,7 @@
 import datetime
 from reference import *
+import openrouteservice
+import folium
 
 class Place:
 
@@ -9,8 +11,11 @@ class Place:
         self.latitude = float(latitude)
         return
 
-    def getCoordinates(self):
-        return self.longitude, self.latitude
+    def getCoordinateslalo(self): #todo : verifier lequel openroute veut en premier
+        return [self.latitude, self.longitude]
+
+    def getCoordinateslola(self): #todo : verifier lequel openroute veut en premier
+        return [self.longitude, self.latitude]
 
     def setCoordinates(self, longitude, latitude):
         self.longitude = longitude
@@ -18,8 +23,8 @@ class Place:
 
 
 class Inlet(Place):
-    lat_header = CLA
-    lon_header = CLO
+    lat_header = ILA
+    lon_header = ILO
     name_header = INLET
 
     def __str__(self):
@@ -49,6 +54,7 @@ class Client(Place):
     def __str__(self):
         return f"Client {self.name} at {self.longitude},{self.latitude}"
 
+
 class High_up(Place):
     pass
 
@@ -70,6 +76,7 @@ class Tour:
         self.duration = 0
         self.high_up1 = None
         self.high_up2 = None
+        self.matrix = None
         return
 
     def addClient(self, client):
@@ -81,6 +88,20 @@ class Tour:
     def get_duration_highups(self):
         pass
 
+    def getClientsCoord(self):
+        coord = list()
+        for c in self.clients:
+            coord.append(c.getCoordinates())
+        return coord
+
+    def getAllCoord(self):
+        coord = list()
+        coord.append(self.inlet.getCoordinateslola())
+        for c in self.clients:
+            coord.append(c.getCoordinateslola())
+        coord.append(self.outlet.getCoordinateslola())
+        return coord
+
     def __str__(self):
         #todo : ajoutet check sur presence données
         str = f"ID = {self.id}\n" \
@@ -89,6 +110,47 @@ class Tour:
               f"Outlet = {self.outlet.name}\n" \
               f"Nombre de clients = {len(self.clients)}\n"
         return str
+
+    def calculateMatrix(self, client, dry_rune=False):
+        coords = self.getAllCoord()
+        print("len : ", len(coords), "coords:", coords)
+        destinations = [i + 1 for i,v in enumerate(coords[1:])]
+        print("destinations:", destinations)
+        matrix = client.distance_matrix(
+            locations=coords,
+            sources=[0,],
+            destinations=destinations,
+            profile='driving-hgv',
+            metrics=['distance', 'duration'],
+            validate=True,
+            optimized=True,
+            dry_run=dry_rune,
+        )
+        self.matrix = matrix
+        return self.matrix
+
+    def getMinDistance(self):
+        if (self.matrix == None):
+            print(f"No matrix calculated yet for Tour {self.id}")
+            return
+        return min(self.matrix['distances'])
+
+    def getMinDuration(self):
+        if (self.matrix == None):
+            print(f"No matrix calculated yet for Tour {self.id}")
+            return
+        return min(self.matrix['duration'])
+
+    def createMap(self):
+        m = folium.Map(location=self.inlet.getCoordinateslalo(), zoom_start=10)
+        folium.Marker(location=self.inlet.getCoordinateslalo(),
+                      popup=self.inlet.name).add_to(m)
+        folium.Marker(location=self.outlet.getCoordinateslalo(),
+                      popup=self.inlet.name).add_to(m)
+        for c in self.clients:
+            folium.Marker(location=c.getCoordinateslalo(),
+                          popup=c.name).add_to(m)
+        m.save(f'map_tour{self.id}.html')
 
 class Network:
 
@@ -117,6 +179,13 @@ class Network:
         for tour in self.tours:
             str = str + tour.__str__() + "\n"
         return str
+
+    def summaryInFile(self, path=""):
+        if path == "":
+            path = "network_summary"
+        f = open(path, 'w')
+        f.write(self.__str__())
+        f.close()
 
     def clientInNetwork(self, client=None, client_name=""):
         if client == None and client_name != "":
@@ -183,3 +252,4 @@ class Network:
             if tour.id == id:
                 return tour
         return None
+

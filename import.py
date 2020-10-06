@@ -2,6 +2,7 @@ from FileLoader import FileLoader
 import sys
 from Movement import Tour, Outlet, Inlet, Client, Network
 from reference import *
+import openrouteservice
 
 def check_tour_data(id, df):  # todo : enregister les valeurs posant problemes
     ret = True
@@ -25,7 +26,7 @@ def create_place(row, ptype):
     try:
         lon = float(row[ptype.lon_header])
         lat = float(row[ptype.lat_header])
-    except ValueError:
+    except ValueError: #todo : faire un enregistrement des logs erreurs
         print(f"ID = {row[ID]} -- {ptype.__name__} {row[ptype.name_header]} not included because no coordinates")
         return None
     if not(lon and lat):
@@ -71,7 +72,15 @@ def main(path):
     loader = FileLoader()
     df = loader.load(path)
     network = create_netwok(df)
-    print(network)
+    network.summaryInFile(f"{path}_net_summary")
+    client = openrouteservice.Client(key=APIKEY)
+    first_tour = network.tours[0]
+    print(first_tour)
+    print("inlet:", first_tour.inlet.getCoordinateslola())
+    print("outlet: ", first_tour.outlet.getCoordinateslola())
+    print(first_tour.calculateMatrix(client, dry_rune=False))
+    first_tour.findMinDist()
+    # first_tour.createMap()
 
 
 if __name__ == '__main__':
