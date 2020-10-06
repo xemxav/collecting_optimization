@@ -84,7 +84,8 @@ def main(path):
     # print("outlet: ", first_tour.outlet.getCoordinateslola())
     first_tour.calculateMatrix(client)
     print(first_tour)
-
+    first_tour.calc_optimization(client, dry_run=False)
+    first_tour.createMap()
 
 if __name__ == '__main__':
     if len(sys.argv) <= 1:

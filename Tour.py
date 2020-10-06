@@ -24,16 +24,11 @@ class Tour:
         self.high_up2 = None
         self.matrix = None
         self.sorted_clients = None
+        self.routes = None
         return
 
     def addClient(self, client):
         self.clients.append(client)
-
-    def get_distances_highups(self):
-        pass
-
-    def get_duration_highups(self):
-        pass
 
     def getClientsCoord(self):
         coord = list()
@@ -82,9 +77,14 @@ class Tour:
         self.DefineHighUps()
         return self.matrix
 
-    def SortClients(self):
+    def checkmatrix(self):
         if self.matrix is None:
             print(f"No matrix calculated yet for Tour {self.tour_id}")
+            return False
+        return True
+
+    def SortClients(self):
+        if not self.checkmatrix():
             return False
         self.sorted_clients = list()
         length = len(self.matrix['distances'][0]) - 1
@@ -101,8 +101,7 @@ class Tour:
         return True
 
     def DefineHighUps(self):
-        if self.matrix is None or self.sorted_clients is None:
-            print(f"No matrix calculated yet for Tour {self.tour_id}")
+        if not self.checkmatrix():
             return False
         self.high_up1 = self.sorted_clients[0]
         length = len(self.matrix['distances'][0]) - 1
@@ -114,8 +113,7 @@ class Tour:
         return True
 
     def CalculateStat(self):
-        if self.matrix is None:
-            print(f"No matrix calculated yet for Tour {self.tour_id}")
+        if not self.checkmatrix():
             return False
         print(self.matrix['distances'][0])
         length = len(self.matrix['distances'][0]) - 1
@@ -125,12 +123,52 @@ class Tour:
         self.avg_duration = min(self.matrix['durations'][0][:length])
         return True
 
+    def calc_optimization(self, client, dry_run=False):
+        if not self.checkmatrix():
+            return False
+        coords = [c['client'].getCoordinateslola() for c in self.sorted_clients]
+        coords.append(self.high_up2["outlet"].getCoordinateslola())
+        opti = True if len(coords) > 4 else False
+        self.routes = client.directions(coords,
+                                        profile='driving-hgv',
+                                        format='geojson',
+                                        optimize_waypoints=opti,
+                                        dry_run=dry_run)
+
+        self.firsttrack = client.directions([self.inlet.getCoordinateslola(),
+                                             self.high_up1['client'].getCoordinateslola()],
+                                            profile='driving-hgv',
+                                            format='geojson',
+                                            dry_run=dry_run,
+                                            validate=False)
+
+        self.lasttrack = client.directions([self.high_up2['outlet'].getCoordinateslola(),
+                                            self.inlet.getCoordinateslola()],
+                                           profile='driving-hgv',
+                                           format='geojson',
+                                           dry_run=dry_run,
+                                           validate=False)
+
     def createMap(self):
-        m = folium.Map(location=self.inlet.getCoordinateslalo(), zoom_start=10)
+        m = folium.Map(location=self.inlet.getCoordinateslalo(), zoom_start=15)
+
         folium.Marker(location=self.inlet.getCoordinateslalo(),
                       popup=self.inlet.name).add_to(m)
         folium.Marker(location=self.outlet.getCoordinateslalo(),
                       popup=self.inlet.name).add_to(m)
+
+        folium.PolyLine(locations=[list(reversed(coord))
+                                   for coord in
+                                   self.routes['features'][0]['geometry']['coordinates']]).add_to(m)
+
+        folium.PolyLine(locations=[list(reversed(coord))
+                                   for coord in
+                                   self.firsttrack['features'][0]['geometry']['coordinates']]).add_to(m)
+
+        folium.PolyLine(locations=[list(reversed(coord))
+                                   for coord in
+                                   self.lasttrack['features'][0]['geometry']['coordinates']]).add_to(m)
+
         for c in self.clients:
             folium.Marker(location=c.getCoordinateslalo(),
                           popup=c.name).add_to(m)
