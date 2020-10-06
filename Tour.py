@@ -1,5 +1,5 @@
 import folium
-
+import statistics as stat
 
 class Tour:
 
@@ -25,6 +25,8 @@ class Tour:
         self.matrix = None
         self.sorted_clients = None
         self.routes = None
+        self.totaldistance = None
+        self.totalduration = None
         return
 
     def addClient(self, client):
@@ -107,8 +109,8 @@ class Tour:
         length = len(self.matrix['distances'][0]) - 1
         self.high_up2 = {
             'outlet': self.outlet,
-            'duration': self.matrix['distances'][0][length],
-            'distance': self.matrix['durations'][0][length],
+            'duration': self.matrix['durations'][0][length],
+            'distance': self.matrix['distances'][0][length],
         }
         return True
 
@@ -119,8 +121,8 @@ class Tour:
         length = len(self.matrix['distances'][0]) - 1
         self.min_distances = min(self.matrix['distances'][0][:length])
         self.min_duration = min(self.matrix['durations'][0][:length])
-        self.avg_distances = min(self.matrix['distances'][0][:length])
-        self.avg_duration = min(self.matrix['durations'][0][:length])
+        self.avg_distances = stat.mean(self.matrix['distances'][0][:length])
+        self.avg_duration = stat.mean(self.matrix['durations'][0][:length])
         return True
 
     def calc_optimization(self, client, dry_run=False):
@@ -148,6 +150,15 @@ class Tour:
                                            format='geojson',
                                            dry_run=dry_run,
                                            validate=False)
+
+        self.totaldistance = self.routes['features'][0]['properties']['summary']['distance']\
+                             + self.firsttrack['features'][0]['properties']['summary']['distance']\
+                             + self.lasttrack['features'][0]['properties']['summary']['distance']
+        self.totalduration = self.routes['features'][0]['properties']['summary']['duration']\
+                             + self.firsttrack['features'][0]['properties']['summary']['duration']\
+                             + self.lasttrack['features'][0]['properties']['summary']['duration']
+
+
 
     def createMap(self):
         m = folium.Map(location=self.inlet.getCoordinateslalo(), zoom_start=15)
