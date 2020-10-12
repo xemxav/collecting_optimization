@@ -2,9 +2,9 @@
 
 ## Overview
 The aim of this project is to calculate distance and duration statistics for collections tours by a truck.
-It uses the [openroute service API][https://openrouteservice.org/] in order to get information on routes.
+It uses the [openroute service API](https://openrouteservice.org/) in order to get information on routes.
 
-First, our script collects you data gathered in a excel sheet. It will then use the [openroute service API][https://openrouteservice.org/] to find each distance between the starting point of the tour and the other places using the Matrix endpoint.
+First, our script collects you data gathered in a excel sheet. It will then use the [openroute service API](https://openrouteservice.org/) to find each distance between the starting point of the tour and the other places using the Matrix endpoint.
 Then it uses optimization endpoint to computes duration and distance :
 * between the starting point and it's closest collect place
 * the route for each collect places
@@ -16,8 +16,8 @@ This project is a tool for medmed107 master's thesis.
 ## Usage
 
 ##### Get the project and instal the requirements:
-We strongly advise to use a virtual environnement for all your python projects, with [virtualenv][https://pypi.org/project/virtualenv/] for example.
-More info on virtual environnement [here][https://openclassrooms.com/fr/courses/4425111-perfectionnez-vous-en-python/4463278-travaillez-dans-un-environnement-virtuel] (in French).
+We strongly advise to use a virtual environnement for all your python projects, with [virtualenv](https://pypi.org/project/virtualenv/) for example.
+More info on virtual environnement [here](https://openclassrooms.com/fr/courses/4425111-perfectionnez-vous-en-python/4463278-travaillez-dans-un-environnement-virtuel) (in French).
 
 ```bash
 git clone [link to this repop] [directory_name]
@@ -51,7 +51,7 @@ It must contains the following columns :
 Example of excel file, all headers can be changed in the file reference.py
 
 ##### Insert your openroute service API key in reference.py
-[Sign up][https://openrouteservice.org/dev/#/signup] on Openroute Service and copy your API key in the file reference.py
+[Sign up](https://openrouteservice.org/dev/#/signup) on Openroute Service and copy your API key in the file reference.py
 ```python
 APIKEY = "" # insert your API key between the quotes
 ```
