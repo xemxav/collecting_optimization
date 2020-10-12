@@ -1,7 +1,7 @@
 from Places import Inlet, Outlet, Client
 import pandas as pd
 from reference import ID, OUTLET, INLET, MATERIAL
-
+import time
 
 class Network:
 
@@ -71,7 +71,9 @@ class Network:
                              tour.totaldistance,
                              tour.totalduration
                              ])
+            time.sleep(5)
         df = pd.DataFrame(data, columns=[ID,INLET,OUTLET,MATERIAL, "NB_CLIENTS", "DISTANCE_TOTALE", "DUREE_TOTALE"])
+        print('\a')
         return df
 
     def outletInNetwork(self, outlet=None, outlet_name=""):

@@ -65,6 +65,7 @@ class Tour:
         return ret
 
     def calculateMatrix(self, client, dry_rune=False):
+        print(f"Start matrix for ID {self.tour_id}")
         coords = self.getAllCoord()
         destinations = [i + 1 for i, v in enumerate(coords[1:])]
         try :
@@ -124,7 +125,6 @@ class Tour:
     def CalculateStat(self):
         if not self.checkmatrix():
             return False
-        print(self.matrix['distances'][0])
         length = len(self.matrix['distances'][0]) - 1
         self.min_distances = min(self.matrix['distances'][0][:length])
         self.min_duration = min(self.matrix['durations'][0][:length])
@@ -133,10 +133,11 @@ class Tour:
         return True
 
     def calc_optimization(self, client, dry_run=False):
+        print(f"Start optimization for ID {self.tour_id}")
         if not self.checkmatrix():
             return False
         coords = [c['client'].getCoordinateslola() for c in self.sorted_clients]
-        coords.append(self.high_up2["outlet"].getCoordinateslola())
+        coords.append(self.high_up2["outlet"].getCoordinateslola()) #todo : enlever le high up 2 pour etre sur que c'est le dernier, faire une seule derniere ?
         opti = True if len(coords) > 4 else False
         try:
             self.routes = client.directions(coords,

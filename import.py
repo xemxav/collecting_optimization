@@ -79,7 +79,9 @@ def main(path):
     network = create_netwok(df)
     network.summaryInFile(f"{path}_net_summary")
     client = openrouteservice.Client(key=APIKEY)
-    print(network.calc_network(client))
+    output = network.calc_network(client)
+    #todo : faire un df qui fait un calcul sur le df et mettre en 2eme sheet
+    output.to_excel("output.xlsx")
 
 
 if __name__ == '__main__':
