@@ -21,4 +21,7 @@ All notable changes to this project will be documented in this file.
 - usage and help messages
 - documentation
 - enable to choose the name of the output file
+- make it a package and distribute it
 - everything we can think of  
+
+---
