@@ -15,11 +15,16 @@ class FileLoader:
         :param path: path to excel file
         :return: a panda dataframe
         """
-        new = pd.read_excel(path)
+        new = None
+        try:
+            new = pd.read_excel(path)
+        except FileNotFoundError:
+            print(f"No such file :'{path}'")
+            exit(2)
         print(f"Created dataframe for file {path}")
         try:
             new[DATE] = pd.to_datetime(new[DATE], yearfirst=True)
-        except:
+        except ValueError:
             print(f"Date format is not correct in file {path} in column {DATE}")
             exit(2)
         return new
