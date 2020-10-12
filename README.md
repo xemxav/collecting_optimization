@@ -10,7 +10,8 @@ Then it uses optimization endpoint to computes duration and distance :
 * the route for each collect places
 * between the end point and the starting point (truck go back to their bases) 
 
-This project is a tool for medmed107 master's thesis.
+This project is a tool for [medmed107](https://github.com/Medmed107) master's thesis.
+
 ---
 
 ## Usage
