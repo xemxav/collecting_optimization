@@ -74,14 +74,15 @@ def create_netwok(df):
 
 
 def main(path):
-    loader = FileLoader()
-    df = loader.load(path)
-    network = create_netwok(df)
-    network.summaryInFile(f"{path}_net_summary")
-    client = openrouteservice.Client(key=APIKEY)
-    output = network.calc_network(client)
-    #todo : faire un df qui fait un calcul sur le df et mettre en 2eme sheet
-    output.to_excel("output.xlsx")
+    # loader = FileLoader()
+    df = FileLoader.load(path)
+    FileLoader.display(df, 10)
+    # network = create_netwok(df)
+    # network.summaryInFile(f"{path}_net_summary")
+    # client = openrouteservice.Client(key=APIKEY)
+    # output = network.calc_network(client)
+    # #todo : faire un df qui fait un calcul sur le df et mettre en 2eme sheet
+    # output.to_excel("output.xlsx")
 
 
 if __name__ == '__main__':

@@ -1,8 +1,20 @@
 import pandas as pd
 from reference import DATE
-class FileLoader:
 
-    def load(self, path):
+
+class FileLoader:
+    """
+    The Fileloader class enables the cration and display of panda dataframe from a excel file
+    """
+
+    @staticmethod
+    def load(path):
+        """
+        Takes an excel file and create a dataframe. It checks if the the date column is in date format or not.
+        If not, it prints an error and exit.
+        :param path: path to excel file
+        :return: a panda dataframe
+        """
         new = pd.read_excel(path)
         print(f"Created dataframe for file {path}")
         try:
@@ -12,7 +24,13 @@ class FileLoader:
             exit(2)
         return new
 
-    def display(self, df, n):
+    @staticmethod
+    def display(df, n):
+        """
+        Takes a dataframe and displays n lines
+        :param df: a panda dataframe
+        :param n: the number of line to be displayed
+        """
         if n >= 0:
             print(df.head(n))
         else:
