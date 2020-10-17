@@ -3,6 +3,7 @@ import statistics as stat
 from Places import Inlet, Outlet
 import openrouteservice
 
+
 class Tour:
 
     def __init__(self, tour_id, inlet, outlet, date, driver="", material="", licence_plate="",
@@ -31,23 +32,25 @@ class Tour:
         self.routes = None
         self.totaldistance = None
         self.totalduration = None
+        self.firsttrack = None
+        self.lasttrack = None
         return
 
-    def addClient(self, client):
+    def add_client(self, client):
         self.clients.append(client)
 
-    def getClientsCoord(self):
+    def get_clients_coord(self):
         coord = list()
         for c in self.clients:
             coord.append(c.getCoordinates())
         return coord
 
-    def getAllCoord(self):
+    def get_all_coord(self):
         coord = list()
-        coord.append(self.inlet.getCoordinateslola())
+        coord.append(self.inlet.get_coordinates_lola())
         for c in self.clients:
-            coord.append(c.getCoordinateslola())
-        coord.append(self.outlet.getCoordinateslola())
+            coord.append(c.get_coordinates_lola())
+        coord.append(self.outlet.get_coordinates_lola())
         return coord
 
     def __str__(self):
@@ -64,11 +67,12 @@ class Tour:
                 ret += f"\t- {elem['client'].name} dist = {elem['distance']}m\n"
         return ret
 
-    def calculateMatrix(self, client, dry_rune=False):
+    def calculate_matrix(self, client, dry_rune=False):
         print(f"Start matrix for ID {self.tour_id}")
-        coords = self.getAllCoord()
+        coords = self.get_all_coord()
         destinations = [i + 1 for i, v in enumerate(coords[1:])]
-        try :
+        matrix = None
+        try:
             matrix = client.distance_matrix(
                 locations=coords,
                 sources=[0, ],
@@ -82,9 +86,9 @@ class Tour:
         except openrouteservice.exceptions.ApiError as e:
             print(e.args)
         self.matrix = matrix
-        self.CalculateStat()
-        self.SortClients()
-        self.DefineHighUps()
+        self.calculate_stat()
+        self.sort_clients()
+        self.define_highups()
         return True
 
     def checkmatrix(self):
@@ -93,7 +97,7 @@ class Tour:
             return False
         return True
 
-    def SortClients(self):
+    def sort_clients(self):
         if not self.checkmatrix():
             return False
         self.sorted_clients = list()
@@ -110,7 +114,7 @@ class Tour:
         self.sorted_clients = sorted(self.sorted_clients, key=lambda elem: elem['distance'])
         return True
 
-    def DefineHighUps(self):
+    def define_highups(self):
         if not self.checkmatrix():
             return False
         self.high_up1 = self.sorted_clients[0]
@@ -122,7 +126,7 @@ class Tour:
         }
         return True
 
-    def CalculateStat(self):
+    def calculate_stat(self):
         if not self.checkmatrix():
             return False
         length = len(self.matrix['distances'][0]) - 1
@@ -136,8 +140,9 @@ class Tour:
         print(f"Start optimization for ID {self.tour_id}")
         if not self.checkmatrix():
             return False
-        coords = [c['client'].getCoordinateslola() for c in self.sorted_clients]
-        coords.append(self.high_up2["outlet"].getCoordinateslola()) #todo : enlever le high up 2 pour etre sur que c'est le dernier, faire une seule derniere ?
+        coords = [c['client'].get_coordinates_lola() for c in self.sorted_clients]
+        coords.append(self.high_up2[
+                          "outlet"].get_coordinates_lola())
         opti = True if len(coords) > 4 else False
         try:
             self.routes = client.directions(coords,
@@ -150,8 +155,8 @@ class Tour:
             return False
 
         try:
-            self.firsttrack = client.directions([self.inlet.getCoordinateslola(),
-                                                 self.high_up1['client'].getCoordinateslola()],
+            self.firsttrack = client.directions([self.inlet.get_coordinates_lola(),
+                                                 self.high_up1['client'].get_coordinates_lola()],
                                                 profile='driving-hgv',
                                                 format='geojson',
                                                 dry_run=dry_run,
@@ -161,8 +166,8 @@ class Tour:
             return False
 
         try:
-            self.lasttrack = client.directions([self.high_up2['outlet'].getCoordinateslola(),
-                                                self.inlet.getCoordinateslola()],
+            self.lasttrack = client.directions([self.high_up2['outlet'].get_coordinates_lola(),
+                                                self.inlet.get_coordinates_lola()],
                                                profile='driving-hgv',
                                                format='geojson',
                                                dry_run=dry_run,
@@ -172,37 +177,37 @@ class Tour:
             print(e.args)
             return False
 
-        self.totaldistance = self.routes['features'][0]['properties']['summary']['distance'] \
-                             + self.firsttrack['features'][0]['properties']['summary']['distance'] \
-                             + self.lasttrack['features'][0]['properties']['summary']['distance']
-        self.totalduration = self.routes['features'][0]['properties']['summary']['duration'] \
-                             + self.firsttrack['features'][0]['properties']['summary']['duration'] \
-                             + self.lasttrack['features'][0]['properties']['summary']['duration']
+        self.totaldistance = self.routes['features'][0]['properties']['summary']['distance'] + \
+                             self.firsttrack['features'][0]['properties']['summary']['distance'] + \
+                             self.lasttrack['features'][0]['properties']['summary']['distance']
+        self.totalduration = self.routes['features'][0]['properties']['summary']['duration'] + \
+                             self.firsttrack['features'][0]['properties']['summary']['duration'] + \
+                             self.lasttrack['features'][0]['properties']['summary']['duration']
         return True
 
-    def createMap(self, map=None):
-        if map is None:
-            map = folium.Map(location=self.inlet.getCoordinateslalo(), zoom_start=15)
+    def create_map(self, initialmap=None):
+        if initialmap is None:
+            initialmap = folium.Map(location=self.inlet.get_coordinates_lalo(), zoom_start=15)
 
-        folium.Marker(location=self.inlet.getCoordinateslalo(),
-                      popup=self.inlet.name).add_to(map)
-        folium.Marker(location=self.outlet.getCoordinateslalo(),
-                      popup=self.inlet.name).add_to(map)
-
-        folium.PolyLine(locations=[list(reversed(coord))
-                                   for coord in
-                                   self.routes['features'][0]['geometry']['coordinates']]).add_to(map)
+        folium.Marker(location=self.inlet.get_coordinates_lalo(),
+                      popup=self.inlet.name).add_to(initialmap)
+        folium.Marker(location=self.outlet.get_coordinates_lalo(),
+                      popup=self.inlet.name).add_to(initialmap)
 
         folium.PolyLine(locations=[list(reversed(coord))
                                    for coord in
-                                   self.firsttrack['features'][0]['geometry']['coordinates']]).add_to(map)
+                                   self.routes['features'][0]['geometry']['coordinates']]).add_to(initialmap)
 
         folium.PolyLine(locations=[list(reversed(coord))
                                    for coord in
-                                   self.lasttrack['features'][0]['geometry']['coordinates']]).add_to(map)
+                                   self.firsttrack['features'][0]['geometry']['coordinates']]).add_to(initialmap)
+
+        folium.PolyLine(locations=[list(reversed(coord))
+                                   for coord in
+                                   self.lasttrack['features'][0]['geometry']['coordinates']]).add_to(initialmap)
 
         for c in self.clients:
-            folium.Marker(location=c.getCoordinateslalo(),
+            folium.Marker(location=c.get_coordinates_lalo(),
                           popup=c.name).add_to(map)
-        map.save(f'map_tour{self.tour_id}.html')
-        return map
+        initialmap.save(f'map_tour{self.tour_id}.html')
+        return initialmap

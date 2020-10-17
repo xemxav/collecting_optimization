@@ -3,6 +3,7 @@ import pandas as pd
 from reference import ID, OUTLET, INLET, MATERIAL
 import time
 
+
 class Network:
 
     def __init__(self, inlets=None, outlets=None, clients=None):
@@ -31,14 +32,14 @@ class Network:
             ret = ret + tour.__str__() + "\n"
         return ret
 
-    def summaryInFile(self, path=""):
+    def summary_in_file(self, path=""):
         if path == "":
             path = "network_summary"
         f = open(path, 'w')
         f.write(self.__str__())
         f.close()
 
-    def clientInNetwork(self, client=None, client_name=""):
+    def client_in_network(self, client=None, client_name=""):
         if client is None and client_name != "":
             for c in self.clients:
                 if c.name == client_name:
@@ -48,7 +49,7 @@ class Network:
             return True
         return False
 
-    def inletInNetwork(self, inlet=None, inlet_name=""):
+    def inlet_in_network(self, inlet=None, inlet_name=""):
         if inlet is None and inlet_name != "":
             for i in self.inlets:
                 if i.name == inlet_name:
@@ -62,7 +63,7 @@ class Network:
         data = []
         for tour in self.tours:
             print(f"Begin Calculation for ID {tour.tour_id}")
-            if tour.calculateMatrix(client) and tour.calc_optimization(client):
+            if tour.calculate_matrix(client) and tour.calc_optimization(client):
                 data.append([tour.tour_id,
                              tour.inlet.name,
                              tour.outlet.name,
@@ -72,11 +73,11 @@ class Network:
                              tour.totalduration
                              ])
             time.sleep(5)
-        df = pd.DataFrame(data, columns=[ID,INLET,OUTLET,MATERIAL, "NB_CLIENTS", "DISTANCE_TOTALE", "DUREE_TOTALE"])
+        df = pd.DataFrame(data, columns=[ID, INLET, OUTLET, MATERIAL, "NB_CLIENTS", "DISTANCE_TOTALE", "DUREE_TOTALE"])
         print('\a')
         return df
 
-    def outletInNetwork(self, outlet=None, outlet_name=""):
+    def outlet_in_network(self, outlet=None, outlet_name=""):
         if outlet is None and outlet_name != "":
             for o in self.outlets:
                 if o.name == outlet_name:
@@ -86,37 +87,37 @@ class Network:
             return True
         return False
 
-    def getClient(self, client_name):
+    def get_client(self, client_name):
         for c in self.clients:
             if c.name == client_name:
                 return c
         return None
 
-    def getInlet(self, inlet_name=""):
+    def get_inlet(self, inlet_name=""):
         for i in self.inlets:
             if i.name == inlet_name:
                 return i
         return None
 
-    def getOutlet(self, outlet_name=""):
+    def get_outlet(self, outlet_name=""):
         for o in self.outlets:
             if o.name == outlet_name:
                 return o
         return None
 
-    def addClient(self, client):
+    def add_client(self, client):
         self.clients.append(client)
 
-    def addInlet(self, inlet):
+    def add_inlet(self, inlet):
         self.inlets.append(inlet)
 
-    def addOutlet(self, outlet):
+    def add_outlet(self, outlet):
         self.outlets.append(outlet)
 
-    def addTour(self, tour):
+    def add_tour(self, tour):
         self.tours.append(tour)
 
-    def getTourById(self, tour_id):
+    def get_tour_by_id(self, tour_id):
         for tour in self.tours:
             if tour.tour_id == tour_id:
                 return tour

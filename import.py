@@ -25,8 +25,6 @@ def check_tour_data(tour_id, df):  # todo : enregister les valeurs posant proble
 
 
 def create_place(row, ptype):
-    # lon = None
-    # lat = None
     try:
         lon = float(row[ptype.lon_header])
         lat = float(row[ptype.lat_header])
@@ -48,8 +46,8 @@ def create_netwok(df):
         if check_tour_data(tour_id, rows) is False:
             continue
         general_info = rows.iloc[0]
-        outlet = network.getOutlet(general_info[OUTLET])
-        inlet = network.getInlet(general_info[INLET])
+        outlet = network.get_outlet(general_info[OUTLET])
+        inlet = network.get_inlet(general_info[INLET])
         if outlet is None:
             outlet = create_place(general_info, Outlet)
         if inlet is None:
@@ -67,22 +65,22 @@ def create_netwok(df):
         for _, row in rows.iterrows():
             client = create_place(row, Client)
             if client:
-                network.addClient(client)
-                new_tour.addClient(client)
-        network.addTour(new_tour)
+                network.add_client(client)
+                new_tour.add_client(client)
+        network.add_tour(new_tour)
     return network
 
 
-def main(path):
-    # loader = FileLoader()
-    df = FileLoader.load(path)
+def main(file_path):
+    df = FileLoader.load(file_path)
     FileLoader.display(df, 10)
-    # network = create_netwok(df)
-    # network.summaryInFile(f"{path}_net_summary")
-    # client = openrouteservice.Client(key=APIKEY)
-    # output = network.calc_network(client)
+    network = create_netwok(df)
+    network.summary_in_file(f"{file_path}_net_summary")
+    client = openrouteservice.Client(key=APIKEY)
+    output = network.calc_network(client)
+    network.tours[0].create_map()
     # #todo : faire un df qui fait un calcul sur le df et mettre en 2eme sheet
-    # output.to_excel("output.xlsx")
+    output.to_excel("output.xlsx")
 
 
 if __name__ == '__main__':

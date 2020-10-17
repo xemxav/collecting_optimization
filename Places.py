@@ -2,20 +2,22 @@ from reference import *
 
 
 class Place:
-
+    """
+    The Place class aim to be inher
+    """
     def __init__(self, name, longitude, latitude):  # todo : ajouter exception si longitude pas des float
         self.name = name
         self.longitude = float(longitude)
         self.latitude = float(latitude)
         return
 
-    def getCoordinateslalo(self):  # todo : verifier lequel openroute veut en premier
+    def get_coordinates_lalo(self):  # todo : verifier lequel openroute veut en premier
         return [self.latitude, self.longitude]
 
-    def getCoordinateslola(self):  # todo : verifier lequel openroute veut en premier
+    def get_coordinates_lola(self):  # todo : verifier lequel openroute veut en premier
         return [self.longitude, self.latitude]
 
-    def setCoordinates(self, longitude, latitude):
+    def set_coordinates(self, longitude, latitude):
         self.longitude = longitude
         self.latitude = latitude
 
