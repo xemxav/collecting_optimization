@@ -28,7 +28,7 @@ def create_place(row, ptype):
     try:
         lon = float(row[ptype.lon_header])
         lat = float(row[ptype.lat_header])
-    except ValueError:  # todo : faire un enregistrement des logs erreurs
+    except ValueError:
         print(f"ID = {row[ID]} -- {ptype.__name__} {row[ptype.name_header]} not included because no coordinates")
         return None
     if not (lon and lat):
