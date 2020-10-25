@@ -19,4 +19,4 @@ OUTLET = "Outlet"               # The name of the end point
 OLO = "Outlet_Longitude"        # End point's Longitude coordinate
 OLA = "Outlet_latitude"         # End point's Longitude coordinate
 
-APIKEY = "5b3ce3597851110001cf6248435db7a68fe148e1888617695f66133c"     # insert your API key between the quotes
+APIKEY = ""     # insert your API key between the quotes
